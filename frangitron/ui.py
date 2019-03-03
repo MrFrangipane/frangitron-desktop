@@ -44,7 +44,10 @@ class Window(QtWidgets.QWidget):
         layout = QtWidgets.QGridLayout(self)
 
         for i in range(self.raspberry.cpu_count + 1):
-            layout.addWidget(QtWidgets.QLabel('CPU Usage {}'.format(i)), i, 0)
+            if i == 0:
+                layout.addWidget(QtWidgets.QLabel('CPU Usage'), i, 0)
+            else:
+                layout.addWidget(QtWidgets.QLabel('Core {}'.format(i)), i, 0)
             layout.addWidget(self.usage[i], i, 1)
 
         self.process_running = QtWidgets.QCheckBox('frangitron')
