@@ -10,6 +10,7 @@ QProgressBar { text-align: center; }
 """
 _INTERVAL = 2.5
 _FRANGITRON_COMMAND_LINE = '/home/pi/frangitron/frangitron --platform linuxfb'
+_POST_COMPILE_COMMAND_LINE = './frangitron --platform linuxfb'
 
 
 class Window(QtWidgets.QWidget):
@@ -129,7 +130,9 @@ class Window(QtWidgets.QWidget):
             self.memory.setValue(total[0] - free[0])
             self.memory.setFormat("%v " + total[1])
 
-            self.process_running.setChecked(self.raspberry.ps_grep(_FRANGITRON_COMMAND_LINE))
+            post_compile = self.raspberry.ps_grep(_POST_COMPILE_COMMAND_LINE)
+            from_here = self.raspberry.ps_grep(_FRANGITRON_COMMAND_LINE)
+            self.process_running.setChecked(post_compile or from_here)
 
         except ConnectionAbortedError as e:
             pass
@@ -139,6 +142,7 @@ class Window(QtWidgets.QWidget):
 
     def _kill(self):
         self.raspberry.kill(_FRANGITRON_COMMAND_LINE)
+        self.raspberry.kill(_POST_COMPILE_COMMAND_LINE)
 
     def _reboot(self):
         self.raspberry.reboot()
