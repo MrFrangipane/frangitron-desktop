@@ -37,8 +37,8 @@ class Window(QtWidgets.QWidget):
             self.usage.append(new_progess_bar)
 
         self.temperature = QtWidgets.QProgressBar()
-        self.temperature.setMinimum(100)
-        self.temperature.setMaximum(700)
+        self.temperature.setMinimum(200)
+        self.temperature.setMaximum(800)
 
         self.memory = QtWidgets.QProgressBar()
 
