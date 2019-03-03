@@ -1,9 +1,10 @@
 from PySide2 import QtWidgets
 from PySide2 import QtCore
 from .ssh_raspberry_pi_3 import SSHRaspberryPi3
+from . import desktop_computer
 
 
-_INTERVAL = 1.0
+_INTERVAL = 2.5
 _CSS = """
 QProgressBar::chunk { width: 1px; }
 QProgressBar { text-align: center; }
@@ -49,6 +50,11 @@ class Window(QtWidgets.QWidget):
         self.process_running = QtWidgets.QCheckBox('frangitron')
         self.process_running.setEnabled(False)
 
+        self.commit_message = QtWidgets.QLineEdit()
+        self.commit_message.setText('<commit message>')
+        self.push = QtWidgets.QPushButton('Push and compile')
+        self.push.clicked.connect(self._push_compile)
+
         self.shutdown = QtWidgets.QPushButton('Shutdown')
         self.shutdown.clicked.connect(self._shutdown)
 
@@ -72,7 +78,10 @@ class Window(QtWidgets.QWidget):
 
         layout.addWidget(QtWidgets.QLabel(''), self.raspberry.cpu_count + 7, 0)
 
-        layout.addWidget(self.shutdown, self.raspberry.cpu_count + 8, 0)
+        layout.addWidget(self.push, self.raspberry.cpu_count + 8, 0)
+        layout.addWidget(self.commit_message, self.raspberry.cpu_count + 8, 1)
+
+        layout.addWidget(self.shutdown, self.raspberry.cpu_count + 9, 0)
 
         self._update()
 
@@ -107,3 +116,6 @@ class Window(QtWidgets.QWidget):
 
     def _shutdown(self):
         self.raspberry.shutdown()
+
+    def _push_compile(self):
+        desktop_computer.push_and_compile(self.commit_message.text())
