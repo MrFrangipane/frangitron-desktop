@@ -51,7 +51,14 @@ class SSHRaspberryPi3(object):
 
         Example : (58.1, (57.1, 54.2, 58.6, 55.0))
         """
-        info = self._command('mpstat -P ALL')
+        data = self._command('mpstat -P ALL 1 1')
+        info = data[:3]
+
+        # Only first block of values
+        for line in data[3:]:
+            if not line: break
+            info.append(line)
+
         self.cpu_count = len(info[5:])
 
         all = (100.0 - float(info[4].split()[-1]))
