@@ -4,11 +4,12 @@ from .ssh_raspberry_pi_3 import SSHRaspberryPi3
 from . import desktop_computer
 
 
-_INTERVAL = 2.5
 _CSS = """
 QProgressBar::chunk { width: 1px; }
 QProgressBar { text-align: center; }
 """
+_INTERVAL = 2.5
+_FRANGITRON_COMMAND_LINE = '/home/pi/frangitron/frangitron --platform linuxfb'
 
 
 class Window(QtWidgets.QWidget):
@@ -58,7 +59,16 @@ class Window(QtWidgets.QWidget):
         self.push = QtWidgets.QPushButton('Push and compile')
         self.push.clicked.connect(self._push_compile)
 
-        self.shutdown = QtWidgets.QPushButton('Shutdown')
+        self.start = QtWidgets.QPushButton('Start Frangitron')
+        self.start.clicked.connect(self._start)
+
+        self.kill = QtWidgets.QPushButton('Kill Frangitron')
+        self.kill.clicked.connect(self._kill)
+
+        self.reboot = QtWidgets.QPushButton('Reboot Pi')
+        self.reboot.clicked.connect(self._reboot)
+
+        self.shutdown = QtWidgets.QPushButton('Shutdown Pi')
         self.shutdown.clicked.connect(self._shutdown)
 
         #
@@ -84,7 +94,14 @@ class Window(QtWidgets.QWidget):
         layout.addWidget(self.push, self.raspberry.cpu_count + 8, 0)
         layout.addWidget(self.commit_message, self.raspberry.cpu_count + 8, 1)
 
-        layout.addWidget(self.shutdown, self.raspberry.cpu_count + 9, 0)
+        buttons = QtWidgets.QWidget()
+        buttons_layout = QtWidgets.QHBoxLayout(buttons)
+        buttons_layout.setContentsMargins(0, 0, 0, 0)
+        buttons_layout.addWidget(self.start)
+        buttons_layout.addWidget(self.kill)
+        buttons_layout.addWidget(self.reboot)
+        buttons_layout.addWidget(self.shutdown)
+        layout.addWidget(buttons, self.raspberry.cpu_count + 9, 0, 1, 2)
 
         self._update()
 
@@ -112,10 +129,19 @@ class Window(QtWidgets.QWidget):
             self.memory.setValue(total[0] - free[0])
             self.memory.setFormat("%v " + total[1])
 
-            self.process_running.setChecked(self.raspberry.ps_grep('frangitron --platform'))
+            self.process_running.setChecked(self.raspberry.ps_grep(_FRANGITRON_COMMAND_LINE))
 
         except ConnectionAbortedError as e:
             pass
+
+    def _start(self):
+        return self.raspberry.run(_FRANGITRON_COMMAND_LINE)
+
+    def _kill(self):
+        self.raspberry.kill(_FRANGITRON_COMMAND_LINE)
+
+    def _reboot(self):
+        self.raspberry.reboot()
 
     def _shutdown(self):
         self.raspberry.shutdown()

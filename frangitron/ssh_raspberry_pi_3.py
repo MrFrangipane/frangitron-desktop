@@ -57,12 +57,16 @@ class SSHRaspberryPi3(object):
         # Only first block of values
         for line in data[3:]:
             if not line: break
-            info.append(line)
+            if line:
+                info.append(line)
 
         self.cpu_count = len(info[5:])
-
-        all = (100.0 - float(info[4].split()[-1]))
-        per_cpu = [(100.0 - float(line.split()[-1])) for line in info[5:]]
+        try:
+            all = (100.0 - float(info[4].split()[-1]))
+            per_cpu = [(100.0 - float(line.split()[-1])) for line in info[5:]]
+        except ValueError as e:
+            all = 0.0
+            per_cpu = [0.0 for _ in range(self.cpu_count)]
 
         return all, per_cpu
 
@@ -76,11 +80,28 @@ class SSHRaspberryPi3(object):
         free = int(info[2].split()[1]), info[2].split()[2]
         return total, free
 
+    def run(self, command, cwd=None, background=True):
+        """
+        Runs a command, returns result in splitted lines
+        """
+        if cwd is not None:
+            self._command('cd ' + cwd)
+
+        if background and not command.endswith('&'):
+            command += ' &'
+
+        info = self._command(command)
+        return info[1:]
+
+    def kill(self, command):
+        """
+        Kills process matching given command line pattern
+        """
+        self._command('pkill -f "{}"'.format(command))
+
     def ps_grep(self, name):
         """
         Performs a `ps -ef | grep "<name>"`, returns True if any process is found, False otherwise
-        :param name:
-        :return:
         """
         info = self._command('ps -ef | grep "{}"'.format(name))
         return len(info) > 2
