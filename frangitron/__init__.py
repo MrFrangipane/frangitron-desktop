@@ -1,1 +1,1 @@
-from .ssh_raspberry_pi_3 import SSHRaspberryPi3
+from .raspberry_pi_3 import RaspberryPi3

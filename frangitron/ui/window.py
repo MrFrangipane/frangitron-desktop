@@ -1,7 +1,6 @@
 from PySide2 import QtWidgets
-from PySide2 import QtCore
-from .ssh_raspberry_pi_3 import SSHRaspberryPi3
-from . import desktop_computer
+from frangitron.raspberry_pi_3 import RaspberryPi3, Status
+from frangitron import desktop_computer
 
 
 _CSS = """
@@ -9,8 +8,6 @@ QProgressBar::chunk { width: 1px; }
 QProgressBar { text-align: center; }
 """
 _INTERVAL = 2.5
-_FRANGITRON_COMMAND_LINE = '/home/pi/frangitron/frangitron --platform linuxfb'
-_POST_COMPILE_COMMAND_LINE = './frangitron --platform linuxfb'
 
 
 class Window(QtWidgets.QWidget):
@@ -21,12 +18,11 @@ class Window(QtWidgets.QWidget):
         self.setWindowTitle("Frangitron Monitor - {}".format(address))
         self.setStyleSheet(_CSS)
 
-        self.raspberry = SSHRaspberryPi3(address)
+        self.raspberry = RaspberryPi3(address)
         if not self.raspberry.connected: return
 
         #
         ## Widgets
-
         self.usage = list()
         for i in range(self.raspberry.cpu_count + 1):
             new_progess_bar = QtWidgets.QProgressBar()
@@ -42,15 +38,6 @@ class Window(QtWidgets.QWidget):
         self.temperature.setMaximum(800)
 
         self.memory = QtWidgets.QProgressBar()
-
-        layout = QtWidgets.QGridLayout(self)
-
-        for i in range(self.raspberry.cpu_count + 1):
-            if i == 0:
-                layout.addWidget(QtWidgets.QLabel('CPU Usage'), i, 0)
-            else:
-                layout.addWidget(QtWidgets.QLabel('Core {}'.format(i)), i, 0)
-            layout.addWidget(self.usage[i], i, 1)
 
         self.process_running = QtWidgets.QCheckBox('frangitron')
         self.process_running.setEnabled(False)
@@ -72,8 +59,20 @@ class Window(QtWidgets.QWidget):
         self.shutdown = QtWidgets.QPushButton('Shutdown Pi')
         self.shutdown.clicked.connect(self._shutdown)
 
+        self.offline_label = QtWidgets.QLabel('Frangitron is offline ({})'.format(address))
+        self.offline_label.setStyleSheet("background-color: red; color: white; padding: 5px 5px 5px 5px")
+        self.offline_label.setVisible(False)
+
         #
         ## Layout
+        layout = QtWidgets.QGridLayout(self)
+
+        for i in range(self.raspberry.cpu_count + 1):
+            if i == 0:
+                layout.addWidget(QtWidgets.QLabel('CPU Usage'), i, 0)
+            else:
+                layout.addWidget(QtWidgets.QLabel('Core {}'.format(i)), i, 0)
+            layout.addWidget(self.usage[i], i, 1)
 
         layout.addWidget(QtWidgets.QLabel(''), self.raspberry.cpu_count + 1, 0)
 
@@ -104,45 +103,47 @@ class Window(QtWidgets.QWidget):
         buttons_layout.addWidget(self.shutdown)
         layout.addWidget(buttons, self.raspberry.cpu_count + 9, 0, 1, 2)
 
-        self._update()
+        layout.addWidget(self.offline_label, self.raspberry.cpu_count + 10, 0, 1, 2)
 
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self._update)
-        self.timer.start(int(_INTERVAL * 1000))
+        #
+        # Monitor
+        self._status_update(Status())
 
-    def _update(self):
-        if not self.raspberry.connected:
-            return
+    #
+    # Slots
+    def _status_update(self, status):
+        """
+        Updates the Ui, given a Status object
+        """
+        self.setEnabled(status.online)
+        self.offline_label.setVisible(not status.online)
 
-        try:
-            all, per_core = self.raspberry.cpu_usage()
-            values = [all] + per_core
-            for i, usage in enumerate(self.usage):
-                usage.setValue(values[i] * 10)
-                usage.setFormat("{:.1f} %".format(values[i]))
+        self.usage[0].setValue(status.cpu_load * 10)
+        self.usage[0].setFormat("{:.1f} %".format(status.cpu_load))
+        self.usage[1].setValue(status.core0_load * 10)
+        self.usage[1].setFormat("{:.1f} %".format(status.core0_load))
+        self.usage[2].setValue(status.core1_load * 10)
+        self.usage[2].setFormat("{:.1f} %".format(status.core1_load))
+        self.usage[3].setValue(status.core2_load * 10)
+        self.usage[3].setFormat("{:.1f} %".format(status.core2_load))
+        self.usage[4].setValue(status.core3_load * 10)
+        self.usage[4].setFormat("{:.1f} %".format(status.core3_load))
 
-            temperature, unit = self.raspberry.cpu_temperature()
-            self.temperature.setValue(temperature * 10)
-            self.temperature.setFormat("{:.1f} {}".format(temperature, unit))
+        temperature, unit = status.cpu_temperature
+        self.temperature.setValue(temperature * 10)
+        self.temperature.setFormat("{:.1f} {}".format(temperature, unit))
 
-            total, free = self.raspberry.memory()
-            self.memory.setMaximum(total[0])
-            self.memory.setValue(total[0] - free[0])
-            self.memory.setFormat("%v " + total[1])
+        self.memory.setMaximum(status.memory_total[0])
+        self.memory.setValue(status.memory_used[0])
+        self.memory.setFormat(" ".join([str(i) for i in status.memory_used]))
 
-            post_compile = self.raspberry.ps_grep(_POST_COMPILE_COMMAND_LINE)
-            from_here = self.raspberry.ps_grep(_FRANGITRON_COMMAND_LINE)
-            self.process_running.setChecked(post_compile or from_here)
-
-        except ConnectionAbortedError as e:
-            pass
+        self.process_running.setChecked(status.is_frangitron_running)
 
     def _start(self):
-        return self.raspberry.run(_FRANGITRON_COMMAND_LINE)
+        return self.raspberry.start()
 
     def _kill(self):
-        self.raspberry.kill(_FRANGITRON_COMMAND_LINE)
-        self.raspberry.kill(_POST_COMPILE_COMMAND_LINE)
+        self.raspberry.kill()
 
     def _reboot(self):
         self.raspberry.reboot()
