@@ -3,9 +3,6 @@ from PySide2 import QtCore
 from frangitron.raspberry_pi_3 import RaspberryPi3, Status
 
 
-INTERVAL = 2.5
-
-
 class Monitor(QtCore.QObject):
     updated = QtCore.Signal(Status)
 
@@ -23,11 +20,12 @@ class Monitor(QtCore.QObject):
             if self.raspberrypi is None or not self.raspberrypi.connected:
                 self.raspberrypi = RaspberryPi3(self.address)
 
-            if self.raspberrypi.connected:
-                status = self.raspberrypi.status()
-                self.updated.emit(status)
-
-            time.sleep(INTERVAL)
+            # This takes at least 1s, no sleep needed
+            try:
+                self.updated.emit(self.raspberrypi.status())
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
 
 
 def make_monitor_thread(address):

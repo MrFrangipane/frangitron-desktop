@@ -39,15 +39,15 @@ class RaspberryPi3(object):
     def __init__(self, address, username='pi'):
         logging.info('ssh login')
         self.connected = False
-        self.cpu_count = None
+        self.cpu_count = 4
 
         self.session = pxssh.pxssh()
         try:
-            self.session.login(address, username)
+            self.session.login(address, username, login_timeout=1)
             self.connected = True
-            self.cpu_usage()  # Inits cpu_count
         except (EOF, pxssh.ExceptionPxssh) as e:
             pass
+
 
     def __del__(self):
         if self.connected:
@@ -62,15 +62,14 @@ class RaspberryPi3(object):
         :return: whole prompt splitted in lines of strings
         """
         if not self.connected:
-            raise ConnectionAbortedError('Pi is not connected')
-
-        self.session.sendline(command)
+            return tuple()
 
         try:
+            self.session.sendline(command)
             self.session.prompt()
         except EOF as e:
             self.connected = False
-            raise ConnectionAbortedError('Pi was disconnected')
+            return tuple()
 
         return self.session.before.decode().splitlines()
 
@@ -79,6 +78,9 @@ class RaspberryPi3(object):
         Performs a `ps -ef | grep "<name>"`, returns True if any process is found, False otherwise
         """
         info = self._command('ps -ef | grep "{}"'.format(name))
+        if not info:
+            return False
+
         return len(info) > 2
 
     def _run(self, command, cwd=None, background=True):
@@ -108,8 +110,11 @@ class RaspberryPi3(object):
 
         Example : (55, '°C')
         """
-        result = self._command('cat /sys/class/thermal/thermal_zone0/temp')[-1]
-        return float(result) / 1000.0, '°C'
+        result = self._command('cat /sys/class/thermal/thermal_zone0/temp')
+        if not result:
+            return 0.0, '°C'
+
+        return float(result[-1]) / 1000.0, '°C'
 
     def cpu_usage(self):
         """
@@ -121,6 +126,11 @@ class RaspberryPi3(object):
         Example : (58.1, (57.1, 54.2, 58.6, 55.0))
         """
         data = self._command('mpstat -P ALL 1 1')
+        if not data:
+            all_ = 0.0
+            per_cpu = [0.0 for _ in range(self.cpu_count)]
+            return all_, per_cpu
+
         info = data[:3]
 
         # Only first block of values
@@ -129,7 +139,6 @@ class RaspberryPi3(object):
             if line:
                 info.append(line)
 
-        self.cpu_count = len(info[5:])
         try:
             all_ = (100.0 - float(info[4].split()[-1]))
             per_cpu = [(100.0 - float(line.split()[-1])) for line in info[5:]]
@@ -145,8 +154,10 @@ class RaspberryPi3(object):
 
         Example : ((101557 'kB'), (51535, 'kB'))
         """
-        self.cpu_usage()
         info = self._command('cat /proc/meminfo')
+        if not info:
+            return ((0, 'kB'), (0, 'kB'))
+
         total = int(info[1].split()[1]), info[1].split()[2]
         used = total[0] - int(info[2].split()[1]), info[2].split()[2]
         return total, used
@@ -165,12 +176,11 @@ class RaspberryPi3(object):
             This takes a least 1s to execute
         """
         if not self.connected: return Status()
-
         status = Status()
-
         status.online = True
 
         all_, per_cpu = self.cpu_usage()
+
         status.cpu_load = all_
         status.core0_load = per_cpu[0]
         status.core1_load = per_cpu[1]

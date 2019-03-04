@@ -151,17 +151,17 @@ class Window(QtWidgets.QWidget):
     def _kill(self):
         raspberry = RaspberryPi3(self.address)
         if raspberry.connected:
-            return raspberry.kill()
+            raspberry.kill()
 
     def _reboot(self):
         raspberry = RaspberryPi3(self.address)
         if raspberry.connected:
-            return raspberry.reboot()
+            raspberry.reboot()
 
     def _shutdown(self):
         raspberry = RaspberryPi3(self.address)
         if raspberry.connected:
-            return raspberry.shutdown()
+            raspberry.shutdown()
 
     def _push_compile(self):
         desktop_computer.push_and_compile(self.commit_message.text())
