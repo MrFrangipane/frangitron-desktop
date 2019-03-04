@@ -3,8 +3,7 @@ from pexpect import pxssh, EOF
 
 
 _FRANGITRON_COMMAND_LINE = '/home/pi/frangitron/frangitron --platform linuxfb'
-_POST_COMPILE_COMMAND_LINE = './frangitron --platform linuxfb'
-_IS_RUNNING_PATTERN = 'frangitron --platform linuxfb'
+_FRANGITRON_PROCESS_PATTERN = 'frangitron --platform linuxfb'
 
 
 class Status(object):
@@ -149,14 +148,14 @@ class RaspberryPi3(object):
         self.cpu_usage()
         info = self._command('cat /proc/meminfo')
         total = int(info[1].split()[1]), info[1].split()[2]
-        used = int(total[0] - info[2].split()[1]), info[2].split()[2]
+        used = total[0] - int(info[2].split()[1]), info[2].split()[2]
         return total, used
 
     def is_running(self):
         """
         Returns True if a Frangitron process is found
         """
-        return self._ps_grep(_IS_RUNNING_PATTERN)
+        return self._ps_grep(_FRANGITRON_PROCESS_PATTERN)
 
     def status(self):
         """
@@ -169,6 +168,8 @@ class RaspberryPi3(object):
 
         status = Status()
 
+        status.online = True
+
         all_, per_cpu = self.cpu_usage()
         status.cpu_load = all_
         status.core0_load = per_cpu[0]
@@ -178,7 +179,7 @@ class RaspberryPi3(object):
 
         status.cpu_temperature = self.cpu_temperature()
 
-        status.memory_total, status.memory_used = self.cpu_temperature()
+        status.memory_total, status.memory_used = self.memory()
 
         status.is_frangitron_running = self.is_running()
 
@@ -192,8 +193,7 @@ class RaspberryPi3(object):
 
     def kill(self):
         """Kills the Frangitron process"""
-        self._kill(_FRANGITRON_COMMAND_LINE)
-        self._kill(_POST_COMPILE_COMMAND_LINE)
+        self._kill(_FRANGITRON_PROCESS_PATTERN)
 
     def shutdown(self):
         """

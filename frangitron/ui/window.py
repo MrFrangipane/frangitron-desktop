@@ -1,5 +1,6 @@
 from PySide2 import QtWidgets
 from frangitron.raspberry_pi_3 import RaspberryPi3, Status
+from .monitor_thread import make_monitor_thread
 from frangitron import desktop_computer
 
 
@@ -18,13 +19,12 @@ class Window(QtWidgets.QWidget):
         self.setWindowTitle("Frangitron Monitor - {}".format(address))
         self.setStyleSheet(_CSS)
 
-        self.raspberry = RaspberryPi3(address)
-        if not self.raspberry.connected: return
+        self.address = address
 
         #
         ## Widgets
         self.usage = list()
-        for i in range(self.raspberry.cpu_count + 1):
+        for i in range(5):
             new_progess_bar = QtWidgets.QProgressBar()
             new_progess_bar.setMaximum(1000)
 
@@ -67,32 +67,32 @@ class Window(QtWidgets.QWidget):
         ## Layout
         layout = QtWidgets.QGridLayout(self)
 
-        for i in range(self.raspberry.cpu_count + 1):
+        for i in range(5):
             if i == 0:
                 layout.addWidget(QtWidgets.QLabel('CPU Usage'), i, 0)
             else:
                 layout.addWidget(QtWidgets.QLabel('Core {}'.format(i)), i, 0)
             layout.addWidget(self.usage[i], i, 1)
 
-        layout.addWidget(QtWidgets.QLabel(''), self.raspberry.cpu_count + 1, 0)
+        layout.addWidget(QtWidgets.QLabel(''), 5, 0)
 
-        layout.addWidget(QtWidgets.QLabel('CPU Temperature'), self.raspberry.cpu_count + 2, 0)
-        layout.addWidget(self.temperature, self.raspberry.cpu_count + 2, 1)
+        layout.addWidget(QtWidgets.QLabel('CPU Temperature'), 6, 0)
+        layout.addWidget(self.temperature, 6, 1)
 
-        layout.addWidget(QtWidgets.QLabel(''), self.raspberry.cpu_count + 3, 0)
+        layout.addWidget(QtWidgets.QLabel(''), 7, 0)
 
-        layout.addWidget(QtWidgets.QLabel('Memory'), self.raspberry.cpu_count + 4, 0)
-        layout.addWidget(self.memory, self.raspberry.cpu_count + 4, 1)
+        layout.addWidget(QtWidgets.QLabel('Memory'), 8, 0)
+        layout.addWidget(self.memory, 8, 1)
 
-        layout.addWidget(QtWidgets.QLabel(''), self.raspberry.cpu_count + 5, 0)
+        layout.addWidget(QtWidgets.QLabel(''), 9, 0)
 
-        layout.addWidget(QtWidgets.QLabel('Running'), self.raspberry.cpu_count + 6, 0)
-        layout.addWidget(self.process_running, self.raspberry.cpu_count+ 6, 1)
+        layout.addWidget(QtWidgets.QLabel('Running'), 10, 0)
+        layout.addWidget(self.process_running, 10, 1)
 
-        layout.addWidget(QtWidgets.QLabel(''), self.raspberry.cpu_count + 7, 0)
+        layout.addWidget(QtWidgets.QLabel(''), 11, 0)
 
-        layout.addWidget(self.push, self.raspberry.cpu_count + 8, 0)
-        layout.addWidget(self.commit_message, self.raspberry.cpu_count + 8, 1)
+        layout.addWidget(self.push, 12, 0)
+        layout.addWidget(self.commit_message, 12, 1)
 
         buttons = QtWidgets.QWidget()
         buttons_layout = QtWidgets.QHBoxLayout(buttons)
@@ -101,12 +101,16 @@ class Window(QtWidgets.QWidget):
         buttons_layout.addWidget(self.kill)
         buttons_layout.addWidget(self.reboot)
         buttons_layout.addWidget(self.shutdown)
-        layout.addWidget(buttons, self.raspberry.cpu_count + 9, 0, 1, 2)
+        layout.addWidget(buttons, 13, 0, 1, 2)
 
-        layout.addWidget(self.offline_label, self.raspberry.cpu_count + 10, 0, 1, 2)
+        layout.addWidget(self.offline_label, 14, 0, 1, 2)
 
         #
         # Monitor
+        self.monitor, self.monitor_thread = make_monitor_thread(self.address)
+        self.monitor.updated.connect(self._status_update)
+        self.monitor_thread.start()
+
         self._status_update(Status())
 
     #
@@ -140,16 +144,24 @@ class Window(QtWidgets.QWidget):
         self.process_running.setChecked(status.is_frangitron_running)
 
     def _start(self):
-        return self.raspberry.start()
+        raspberry = RaspberryPi3(self.address)
+        if raspberry.connected:
+            return raspberry.start()
 
     def _kill(self):
-        self.raspberry.kill()
+        raspberry = RaspberryPi3(self.address)
+        if raspberry.connected:
+            return raspberry.kill()
 
     def _reboot(self):
-        self.raspberry.reboot()
+        raspberry = RaspberryPi3(self.address)
+        if raspberry.connected:
+            return raspberry.reboot()
 
     def _shutdown(self):
-        self.raspberry.shutdown()
+        raspberry = RaspberryPi3(self.address)
+        if raspberry.connected:
+            return raspberry.shutdown()
 
     def _push_compile(self):
         desktop_computer.push_and_compile(self.commit_message.text())
