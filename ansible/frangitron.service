@@ -1,0 +1,11 @@
+[Unit]
+Description=Frangitron
+After=network.target
+
+[Service]
+ExecStart=/home/pi/frangitron/frangitron --platform linuxfb
+WorkingDirectory=/home/pi/frangitron
+User=pi
+
+[Install]
+WantedBy=multi-user.target

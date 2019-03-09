@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=pix
+Description=Raspberry Pi Frangitron Splash
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/frangitron
+ScriptFile=/usr/share/plymouth/themes/frangitron/frangitron.script
