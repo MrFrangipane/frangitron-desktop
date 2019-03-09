@@ -47,11 +47,11 @@ class Window(QtWidgets.QWidget):
         self.push = QtWidgets.QPushButton('Push and compile')
         self.push.clicked.connect(self._push_compile)
 
-        self.start = QtWidgets.QPushButton('Start Frangitron')
+        self.start = QtWidgets.QPushButton('Start service')
         self.start.clicked.connect(self._start)
 
-        self.kill = QtWidgets.QPushButton('Kill Frangitron')
-        self.kill.clicked.connect(self._kill)
+        self.stop = QtWidgets.QPushButton('Stop service')
+        self.stop.clicked.connect(self._stop)
 
         self.reboot = QtWidgets.QPushButton('Reboot Pi')
         self.reboot.clicked.connect(self._reboot)
@@ -98,7 +98,7 @@ class Window(QtWidgets.QWidget):
         buttons_layout = QtWidgets.QHBoxLayout(buttons)
         buttons_layout.setContentsMargins(0, 0, 0, 0)
         buttons_layout.addWidget(self.start)
-        buttons_layout.addWidget(self.kill)
+        buttons_layout.addWidget(self.stop)
         buttons_layout.addWidget(self.reboot)
         buttons_layout.addWidget(self.shutdown)
         layout.addWidget(buttons, 13, 0, 1, 2)
@@ -148,10 +148,10 @@ class Window(QtWidgets.QWidget):
         if raspberry.connected:
             return raspberry.start()
 
-    def _kill(self):
+    def _stop(self):
         raspberry = RaspberryPi3(self.address)
         if raspberry.connected:
-            raspberry.kill()
+            raspberry.stop()
 
     def _reboot(self):
         raspberry = RaspberryPi3(self.address)

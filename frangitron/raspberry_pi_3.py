@@ -2,10 +2,6 @@ import logging
 from pexpect import pxssh, EOF
 
 
-_FRANGITRON_COMMAND_LINE = '/home/pi/frangitron/frangitron --platform linuxfb'
-_FRANGITRON_PROCESS_PATTERN = 'frangitron --platform linuxfb'
-
-
 class Status(object):
     """
     Holds info about Frangitron's Raspberry Pi 3
@@ -40,14 +36,12 @@ class RaspberryPi3(object):
         logging.info('ssh login')
         self.connected = False
         self.cpu_count = 4
-
         self.session = pxssh.pxssh()
         try:
             self.session.login(address, username, login_timeout=1)
             self.connected = True
         except (EOF, pxssh.ExceptionPxssh) as e:
             pass
-
 
     def __del__(self):
         if self.connected:
@@ -72,35 +66,6 @@ class RaspberryPi3(object):
             return tuple()
 
         return self.session.before.decode().splitlines()
-
-    def _ps_grep(self, name):
-        """
-        Performs a `ps -ef | grep "<name>"`, returns True if any process is found, False otherwise
-        """
-        info = self._command('ps -ef | grep "{}"'.format(name))
-        if not info:
-            return False
-
-        return len(info) > 2
-
-    def _run(self, command, cwd=None, background=True):
-        """
-        Runs a command, returns result in splitted lines
-        """
-        if cwd is not None:
-            self._command('cd ' + cwd)
-
-        if background and not command.endswith('&'):
-            command += ' &'
-
-        info = self._command(command)
-        return info[1:]
-
-    def _kill(self, command):
-        """
-        Kills process matching given command line pattern
-        """
-        self._command('pkill -f "{}"'.format(command))
 
     #
     # Status
@@ -166,7 +131,8 @@ class RaspberryPi3(object):
         """
         Returns True if a Frangitron process is found
         """
-        return self._ps_grep(_FRANGITRON_PROCESS_PATTERN)
+        result = self._command('ps aux | grep "frangitron --platform linuxfb"')
+        return len(result) > 2
 
     def status(self):
         """
@@ -198,12 +164,12 @@ class RaspberryPi3(object):
     #
     # Actions
     def start(self):
-        """Starts the Frangitron process"""
-        self._run(_FRANGITRON_COMMAND_LINE)
+        """Starts the Frangitron service"""
+        self._command("sudo systemctl start frangitron")
 
-    def kill(self):
-        """Kills the Frangitron process"""
-        self._kill(_FRANGITRON_PROCESS_PATTERN)
+    def stop(self):
+        """Stops the Frangitron service"""
+        self._command("sudo systemctl stop frangitron")
 
     def shutdown(self):
         """
