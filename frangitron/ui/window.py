@@ -1,5 +1,5 @@
 from PySide2 import QtWidgets
-from frangitron.raspberry_pi_3 import RaspberryPi3, Status
+from frangitron.raspberry_pi_3 import RaspberryPi3, Status, Throttled
 from .monitor_thread import make_monitor_thread
 from frangitron import desktop_computer
 
@@ -20,6 +20,7 @@ class Window(QtWidgets.QWidget):
         self.setStyleSheet(_CSS)
 
         self.address = address
+        self.throttled = dict()
 
         #
         ## Widgets
@@ -91,8 +92,21 @@ class Window(QtWidgets.QWidget):
 
         layout.addWidget(QtWidgets.QLabel(''), 11, 0)
 
-        layout.addWidget(self.push, 12, 0)
-        layout.addWidget(self.commit_message, 12, 1)
+        throttled = QtWidgets.QWidget()
+        throttled_layout = QtWidgets.QVBoxLayout(throttled)
+        throttled_layout.setContentsMargins(0, 0, 0, 0)
+        for name in Throttled().__dict__.keys():
+            new_checkbox = QtWidgets.QCheckBox(name)
+            new_checkbox.setEnabled(False)
+            throttled_layout.addWidget(new_checkbox)
+            self.throttled[name] = new_checkbox
+        layout.addWidget(QtWidgets.QLabel('Throttled'), 12, 0, 1, 2)
+        layout.addWidget(throttled, 12, 1, 1, 2)
+
+        layout.addWidget(QtWidgets.QLabel(), 13, 0)
+
+        layout.addWidget(self.push, 14, 0)
+        layout.addWidget(self.commit_message, 14, 1)
 
         buttons = QtWidgets.QWidget()
         buttons_layout = QtWidgets.QHBoxLayout(buttons)
@@ -101,9 +115,9 @@ class Window(QtWidgets.QWidget):
         buttons_layout.addWidget(self.stop)
         buttons_layout.addWidget(self.reboot)
         buttons_layout.addWidget(self.shutdown)
-        layout.addWidget(buttons, 13, 0, 1, 2)
+        layout.addWidget(buttons, 15, 0, 1, 2)
 
-        layout.addWidget(self.offline_label, 14, 0, 1, 2)
+        layout.addWidget(self.offline_label, 16, 0, 1, 2)
 
         #
         # Monitor
@@ -142,6 +156,9 @@ class Window(QtWidgets.QWidget):
         self.memory.setFormat(" ".join([str(i) for i in status.memory_used]))
 
         self.process_running.setChecked(status.is_frangitron_running)
+
+        for name, value in status.throttled.__dict__.items():
+            self.throttled[name].setChecked(value)
 
     def _start(self):
         raspberry = RaspberryPi3(self.address)

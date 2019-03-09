@@ -2,6 +2,21 @@ import logging
 from pexpect import pxssh, EOF
 
 
+class Throttled(object):
+    def __init__(self, bit=0):
+        self.under_voltage = bool(bit & 2 ** 0)
+        self.arm_freq_caped = bool(bit & 2 ** 1)
+        self.throttled = bool(bit & 2 ** 2)
+        self.soft_temp_limit = bool(bit & 2 ** 3)
+        self.under_voltage_has_occurred = bool(bit & 2 ** 16)
+        self.arm_freq_has_occurred = bool(bit & 2 ** 17)
+        self.throttling_has_occurred = bool(bit & 2 ** 18)
+        self.soft_temp_has_occurred = bool(bit & 2 ** 19)
+
+    def __repr__(self):
+        return "<Throttled {}>".format(self.__dict__)
+
+
 class Status(object):
     """
     Holds info about Frangitron's Raspberry Pi 3
@@ -22,6 +37,8 @@ class Status(object):
         self.memory_used = 0, 'Unit'
 
         self.is_frangitron_running = False
+
+        self.throttled = Throttled()
 
 
 class RaspberryPi3(object):
@@ -68,7 +85,13 @@ class RaspberryPi3(object):
         return self.session.before.decode().splitlines()
 
     #
-    # Status
+    # Statu
+    def throttled(self):
+        result = self._command('vcgencmd get_throttled')
+        bit = int(result[1].split('=')[1], 16)
+
+        return Throttled(bit)
+
     def cpu_temperature(self):
         """
         CPU Temperature as a (value, unit) tuple (float, str)
@@ -158,6 +181,8 @@ class RaspberryPi3(object):
         status.memory_total, status.memory_used = self.memory()
 
         status.is_frangitron_running = self.is_running()
+
+        status.throttled = self.throttled()
 
         return status
 
