@@ -166,7 +166,7 @@
       file:
         path: /var/frangitron
         state: directory
-        owner: pi
+        mode: a+rw
       become: yes
 
     - name: Reboot

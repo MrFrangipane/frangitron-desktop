@@ -65,7 +65,7 @@ class Window(QtWidgets.QWidget):
         self.shutdown = QtWidgets.QPushButton('Shutdown Pi')
         self.shutdown.clicked.connect(self._shutdown)
 
-        self.offline_label = QtWidgets.QLabel()
+        self.online_status = QtWidgets.QLabel('Connecting...')
 
         #
         ## Layout
@@ -123,7 +123,7 @@ class Window(QtWidgets.QWidget):
         buttons_layout.addWidget(self.shutdown)
         layout.addWidget(buttons, 16, 0, 1, 2)
 
-        layout.addWidget(self.offline_label, 16, 0, 1, 2)
+        layout.addWidget(self.online_status, 17, 0, 1, 2)
 
         #
         # Monitor
@@ -141,11 +141,11 @@ class Window(QtWidgets.QWidget):
         """
         self.setEnabled(status.online)
         if status.online:
-            self.offline_label = QtWidgets.QLabel('Frangitron is online ({})'.format(self.address))
-            self.offline_label.setStyleSheet("background-color: green; color: white; padding: 5px 5px 5px 5px")
+            self.online_status.setText('Frangitron is online ({})'.format(self.address))
+            self.online_status.setStyleSheet("background-color: green; color: white; padding: 5px 5px 5px 5px")
         else:
-            self.offline_label = QtWidgets.QLabel('Frangitron is offline ({})'.format(self.address))
-            self.offline_label.setStyleSheet("background-color: red; color: white; padding: 5px 5px 5px 5px")
+            self.online_status.setText('Frangitron is offline ({})'.format(self.address))
+            self.online_status.setStyleSheet("background-color: red; color: white; padding: 5px 5px 5px 5px")
 
         self.usage[0].setValue(status.cpu_load * 10)
         self.usage[0].setFormat("{:.1f} %".format(status.cpu_load))

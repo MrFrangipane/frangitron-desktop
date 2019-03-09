@@ -88,8 +88,10 @@ class RaspberryPi3(object):
     # Statu
     def throttled(self):
         result = self._command('vcgencmd get_throttled')
-        bit = int(result[1].split('=')[1], 16)
+        if not result:
+            return Throttled()
 
+        bit = int(result[1].split('=')[1], 16)
         return Throttled(bit)
 
     def cpu_temperature(self):
