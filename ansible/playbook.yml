@@ -2,152 +2,152 @@
 - hosts: frangitron
   remote_user: pi
   tasks:
-#    - name: Disable bluetooth device
-#      lineinfile:
-#        path: /boot/config.txt
-#        state: present
-#        line: dtoverlay=pi3-disable-bt
-#      become: yes
-#
-#    - name: Enable audio
-#      lineinfile:
-#        path: /boot/config.txt
-#        state: present
-#        line: dtparam=audio=on
-#      become: yes
-#
-#    - name: Force turbo
-#      lineinfile:
-#        path: /boot/config.txt
-#        state: present
-#        line: force_turbo=1
-#      become: yes
-#
-#    - name: LCD rotate
-#      lineinfile:
-#        path: /boot/config.txt
-#        state: present
-#        line: lcd_rotate=2
-#      become: yes
-#
-#    - name: Disable serial console
-#      lineinfile:
-#        path: /boot/config.txt
-#        state: present
-#        line: enable_uart=1
-#      become: yes
-#
-#    - name: Disable bluetooth service
-#      service:
-#        name: bluetooth
-#        state: stopped
-#        enabled: no
-#      become: yes
-#
-#    - name: Disable hciuart service
-#      service:
-#        name: hciuart
-#        state: stopped
-#        enabled: no
-#      become: yes
-#
-#    - name: Disable cron service
-#      service:
-#        name: cron
-#        state: stopped
-#        enabled: no
-#      become: yes
-#
-#    - name: Disable triggerhappy service
-#      service:
-#        name: triggerhappy
-#        state: stopped
-#        enabled: no
-#      become: yes
-#
-#    - name: Disable avahi-daemon service
-#      service:
-#        name: avahi-daemon
-#        state: stopped
-#        enabled: no
-#      become: yes
-#
-#    - name: Install qt5-default
-#      apt:
-#        name: qt5-default
-#        update_cache: yes
-#      become: yes
-#
-#    - name: Install libsndfile-dev
-#      apt:
-#        name: libsndfile1-dev
-#      become: yes
-#
-#    - name: Install libasound2-dev
-#      apt:
-#        name: libasound2-dev
-#      become: yes
-#
-#    - name: Install sysstat
-#      apt:
-#        name: sysstat
-#      become: yes
-#
-#    - name: Screen brightness to 100
-#      raw: echo 100 > /sys/class/backlight/rpi_backlight/brightness
-#      become: yes
-#
-#    - name: "Splashscreen : disable rainbow"
-#      lineinfile:
-#        path: /boot/config.txt
-#        line: disable_splash=1
-#        state: present
-#      become: yes
-#
-#    - name: "Splashscreen : read boot/cmdline.txt"
-#      shell: cat /boot/cmdline.txt
-#      register: cmdline_txt
-#      become: yes
-#
-#    - name: "Splashscreen : alter boot/cmdline.txt"
-#      lineinfile:
-#        path: /boot/cmdline.txt
-#        line: '\1 consoleblank=0 loglevel=1 quiet logo.nologo splash vt.global_cursor_default=0 plymouth.ignore-serial-consoles plymouth.enable=1'
-#        state: present
-#        regexp: '(.*)$'
-#        backrefs: yes
-#      when: cmdline_txt.stdout.find('consoleblank=0 loglevel=1 quiet logo.nologo splash vt.global_cursor_default=0 plymouth.ignore-serial-consoles plymouth.enable=1') == -1
-#      become: yes
-#
-#    - name: "Splashscreen : disable console prompt"
-#      service:
-#        name: getty@tty1
-#        state: stopped
-#        enabled: no
-#      become: yes
-#
-#    - name: "Splashscreen : install plymouth"
-#      apt:
-#        name: plymouth
-#      become: yes
-#
-#    - name: "Splashscreen : enable plymouth"
-#      service:
-#        name: plymouth
-#        enabled: yes
-#      become: yes
-#
-#    - name: "Splashscreen : install frangitron plymouth theme"
-#      copy:
-#        src: plymouth-theme/frangitron
-#        dest: /usr/share/plymouth/themes
-#        owner: root
-#        group: root
-#      become: yes
-#
-#    - name: "Splashscreen : set frangitron theme as default"
-#      shell: plymouth-set-default-theme frangitron
-#      become: yes
+    - name: Disable bluetooth device
+      lineinfile:
+        path: /boot/config.txt
+        state: present
+        line: dtoverlay=pi3-disable-bt
+      become: yes
+
+    - name: Enable audio
+      lineinfile:
+        path: /boot/config.txt
+        state: present
+        line: dtparam=audio=on
+      become: yes
+
+    - name: Force turbo
+      lineinfile:
+        path: /boot/config.txt
+        state: present
+        line: force_turbo=1
+      become: yes
+
+    - name: LCD rotate
+      lineinfile:
+        path: /boot/config.txt
+        state: present
+        line: lcd_rotate=2
+      become: yes
+
+    - name: Disable serial console
+      lineinfile:
+        path: /boot/config.txt
+        state: present
+        line: enable_uart=1
+      become: yes
+
+    - name: Disable bluetooth service
+      service:
+        name: bluetooth
+        state: stopped
+        enabled: no
+      become: yes
+
+    - name: Disable hciuart service
+      service:
+        name: hciuart
+        state: stopped
+        enabled: no
+      become: yes
+
+    - name: Disable cron service
+      service:
+        name: cron
+        state: stopped
+        enabled: no
+      become: yes
+
+    - name: Disable triggerhappy service
+      service:
+        name: triggerhappy
+        state: stopped
+        enabled: no
+      become: yes
+
+    - name: Disable avahi-daemon service
+      service:
+        name: avahi-daemon
+        state: stopped
+        enabled: no
+      become: yes
+
+    - name: Install qt5-default
+      apt:
+        name: qt5-default
+        update_cache: yes
+      become: yes
+
+    - name: Install libsndfile-dev
+      apt:
+        name: libsndfile1-dev
+      become: yes
+
+    - name: Install libasound2-dev
+      apt:
+        name: libasound2-dev
+      become: yes
+
+    - name: Install sysstat
+      apt:
+        name: sysstat
+      become: yes
+
+    - name: Screen brightness to 100
+      raw: echo 100 > /sys/class/backlight/rpi_backlight/brightness
+      become: yes
+
+    - name: "Splashscreen : disable rainbow"
+      lineinfile:
+        path: /boot/config.txt
+        line: disable_splash=1
+        state: present
+      become: yes
+
+    - name: "Splashscreen : read boot/cmdline.txt"
+      shell: cat /boot/cmdline.txt
+      register: cmdline_txt
+      become: yes
+
+    - name: "Splashscreen : alter boot/cmdline.txt"
+      lineinfile:
+        path: /boot/cmdline.txt
+        line: '\1 consoleblank=0 loglevel=1 quiet logo.nologo splash vt.global_cursor_default=0 plymouth.ignore-serial-consoles plymouth.enable=1'
+        state: present
+        regexp: '(.*)$'
+        backrefs: yes
+      when: cmdline_txt.stdout.find('consoleblank=0 loglevel=1 quiet logo.nologo splash vt.global_cursor_default=0 plymouth.ignore-serial-consoles plymouth.enable=1') == -1
+      become: yes
+
+    - name: "Splashscreen : disable console prompt"
+      service:
+        name: getty@tty1
+        state: stopped
+        enabled: no
+      become: yes
+
+    - name: "Splashscreen : install plymouth"
+      apt:
+        name: plymouth
+      become: yes
+
+    - name: "Splashscreen : enable plymouth"
+      service:
+        name: plymouth
+        enabled: yes
+      become: yes
+
+    - name: "Splashscreen : install frangitron plymouth theme"
+      copy:
+        src: plymouth-theme/frangitron
+        dest: /usr/share/plymouth/themes
+        owner: root
+        group: root
+      become: yes
+
+    - name: "Splashscreen : set frangitron theme as default"
+      shell: plymouth-set-default-theme frangitron
+      become: yes
 
     - name: Install Frangitron service
       copy:
