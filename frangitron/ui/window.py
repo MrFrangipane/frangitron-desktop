@@ -43,6 +43,11 @@ class Window(QtWidgets.QWidget):
         self.process_running = QtWidgets.QCheckBox('frangitron')
         self.process_running.setEnabled(False)
 
+        self.recordings_destination = QtWidgets.QLineEdit()
+        self.recordings_destination.setText('/home/frangi/frangitron/recordings')
+        self.get_recordings = QtWidgets.QPushButton('Get recordings')
+        self.get_recordings.clicked.connect(self._get_recordings)
+
         self.commit_message = QtWidgets.QLineEdit()
         self.commit_message.setText('<commit message>')
         self.push = QtWidgets.QPushButton('Push and compile')
@@ -60,9 +65,7 @@ class Window(QtWidgets.QWidget):
         self.shutdown = QtWidgets.QPushButton('Shutdown Pi')
         self.shutdown.clicked.connect(self._shutdown)
 
-        self.offline_label = QtWidgets.QLabel('Frangitron is offline ({})'.format(address))
-        self.offline_label.setStyleSheet("background-color: red; color: white; padding: 5px 5px 5px 5px")
-        self.offline_label.setVisible(False)
+        self.offline_label = QtWidgets.QLabel()
 
         #
         ## Layout
@@ -105,8 +108,11 @@ class Window(QtWidgets.QWidget):
 
         layout.addWidget(QtWidgets.QLabel(), 13, 0)
 
-        layout.addWidget(self.push, 14, 0)
-        layout.addWidget(self.commit_message, 14, 1)
+        layout.addWidget(self.get_recordings, 14, 0)
+        layout.addWidget(self.recordings_destination, 14, 1)
+
+        layout.addWidget(self.push, 15, 0)
+        layout.addWidget(self.commit_message, 15, 1)
 
         buttons = QtWidgets.QWidget()
         buttons_layout = QtWidgets.QHBoxLayout(buttons)
@@ -115,7 +121,7 @@ class Window(QtWidgets.QWidget):
         buttons_layout.addWidget(self.stop)
         buttons_layout.addWidget(self.reboot)
         buttons_layout.addWidget(self.shutdown)
-        layout.addWidget(buttons, 15, 0, 1, 2)
+        layout.addWidget(buttons, 16, 0, 1, 2)
 
         layout.addWidget(self.offline_label, 16, 0, 1, 2)
 
@@ -134,7 +140,12 @@ class Window(QtWidgets.QWidget):
         Updates the Ui, given a Status object
         """
         self.setEnabled(status.online)
-        self.offline_label.setVisible(not status.online)
+        if status.online:
+            self.offline_label = QtWidgets.QLabel('Frangitron is online ({})'.format(self.address))
+            self.offline_label.setStyleSheet("background-color: green; color: white; padding: 5px 5px 5px 5px")
+        else:
+            self.offline_label = QtWidgets.QLabel('Frangitron is offline ({})'.format(self.address))
+            self.offline_label.setStyleSheet("background-color: red; color: white; padding: 5px 5px 5px 5px")
 
         self.usage[0].setValue(status.cpu_load * 10)
         self.usage[0].setFormat("{:.1f} %".format(status.cpu_load))
@@ -182,3 +193,6 @@ class Window(QtWidgets.QWidget):
 
     def _push_compile(self):
         desktop_computer.push_and_compile(self.commit_message.text())
+
+    def _get_recordings(self):
+        desktop_computer.retrieve_recordings(self.address, 'pi', self.recordings_destination.text())

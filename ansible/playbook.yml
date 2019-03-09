@@ -162,6 +162,13 @@
         daemon_reload: yes
       become: yes
 
+    - name: Create recordings folder
+      file:
+        path: /var/frangitron
+        state: directory
+        owner: pi
+      become: yes
+
     - name: Reboot
       reboot:
       become: yes

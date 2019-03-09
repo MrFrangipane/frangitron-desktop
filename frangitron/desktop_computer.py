@@ -13,3 +13,20 @@ def push_and_compile(commit_message):
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT
     )
+
+
+def retrieve_recordings(address, user, destination):
+    """
+    Retieves recordings from pi's /var/frangitron
+    """
+    command = ['gnome-terminal', '-x', 'bash', '-c', 'scp -r {}@{}:/var/frangitron {}'.format(
+        user,
+        address,
+        destination
+    )]
+
+    subprocess.Popen(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT
+    )
