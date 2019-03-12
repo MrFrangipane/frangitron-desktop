@@ -15,6 +15,23 @@ def push_and_compile(commit_message):
     )
 
 
+def upload_samples(address, user, source):
+    """
+    Uploads samples to pi's /var/frangitron/samples
+    """
+    command = ['gnome-terminal', '-x', 'bash', '-c', 'scp -r {} {}@{}:/var/frangitron/samples'.format(
+        source,
+        user,
+        address
+    )]
+
+    subprocess.Popen(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT
+    )
+
+
 def retrieve_recordings(address, user, destination):
     """
     Retieves recordings from pi's /var/frangitron

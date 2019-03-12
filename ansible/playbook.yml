@@ -162,9 +162,23 @@
         daemon_reload: yes
       become: yes
 
-    - name: Create recordings folder
+    - name: Create 'var' folder
       file:
         path: /var/frangitron
+        state: directory
+        mode: a+rw
+      become: yes
+
+    - name: Create recordings folder
+      file:
+        path: /var/frangitron/recordings
+        state: directory
+        mode: a+rw
+      become: yes
+
+    - name: Create samples folder
+      file:
+        path: /var/frangitron/samples
         state: directory
         mode: a+rw
       become: yes
