@@ -164,7 +164,11 @@ class Window(QtWidgets.QWidget):
 
         self.memory.setMaximum(status.memory_total[0])
         self.memory.setValue(status.memory_used[0])
-        self.memory.setFormat(" ".join([str(i) for i in status.memory_used]))
+        self.memory.setFormat(
+            " ".join([str(i) for i in status.memory_used])
+            + ' / ' +
+            " ".join([str(i) for i in status.memory_total])
+        )
 
         self.process_running.setChecked(status.is_frangitron_running)
 
