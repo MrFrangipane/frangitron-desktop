@@ -140,17 +140,17 @@ class RaspberryPi3(object):
 
     def memory(self):
         """
-        Two (value, unit) tuples of total and used memory (int, str)
+        Two (value, unit) tuples of total and available memory (int, str)
 
         Example : ((101557 'kB'), (51535, 'kB'))
         """
-        info = self._command('cat /proc/meminfo')
+        info = self._command('free -m')
         if not info:
-            return ((0, 'kB'), (0, 'kB'))
+            return ((0, 'MB'), (0, 'MB'))
 
-        total = int(info[1].split()[1]), info[1].split()[2]
-        used = total[0] - int(info[2].split()[1]), info[2].split()[2]
-        return total, used
+        total = int(info[2].split()[1])
+        available = int(info[2].split()[6])
+        return (total, 'MB'), (available, 'MB')
 
     def is_running(self):
         """

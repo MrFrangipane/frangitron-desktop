@@ -39,6 +39,7 @@ class Window(QtWidgets.QWidget):
         self.temperature.setMaximum(800)
 
         self.memory = QtWidgets.QProgressBar()
+        self.memory.setInvertedAppearance(True)
 
         self.process_running = QtWidgets.QCheckBox('frangitron')
         self.process_running.setEnabled(False)
@@ -85,7 +86,7 @@ class Window(QtWidgets.QWidget):
 
         layout.addWidget(QtWidgets.QLabel(''), 7, 0)
 
-        layout.addWidget(QtWidgets.QLabel('Memory'), 8, 0)
+        layout.addWidget(QtWidgets.QLabel('Memory Available'), 8, 0)
         layout.addWidget(self.memory, 8, 1)
 
         layout.addWidget(QtWidgets.QLabel(''), 9, 0)
